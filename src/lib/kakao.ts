@@ -93,7 +93,16 @@ export function searchAddress(query: string): Promise<AddressSearchResult[]> {
   })
 }
 
-export function searchPlaces(query: string): Promise<AddressSearchResult[]> {
+// A single business/place result from Kakao's keyword search - used to
+// auto-fill the wedding hall registration form from an existing Kakao Map
+// listing (name, address, coordinates, phone if Kakao has it on file).
+export interface PlaceSearchResult extends AddressSearchResult {
+  placeName: string
+  phone?: string
+  categoryName?: string
+}
+
+export function searchPlaces(query: string): Promise<PlaceSearchResult[]> {
   return new Promise((resolve, reject) => {
     if (!window.kakao?.maps?.services) {
       reject(new Error('KAKAO_SERVICES_NOT_LOADED'))
@@ -104,10 +113,13 @@ export function searchPlaces(query: string): Promise<AddressSearchResult[]> {
       if (status === window.kakao.maps.services.Status.OK) {
         resolve(
           result.map((r) => ({
+            placeName: r.place_name,
             address: r.address_name,
-            roadAddress: r.road_address_name,
+            roadAddress: r.road_address_name || undefined,
             latitude: parseFloat(r.y),
             longitude: parseFloat(r.x),
+            phone: r.phone || undefined,
+            categoryName: r.category_name || undefined,
           })),
         )
       } else if (status === window.kakao.maps.services.Status.ZERO_RESULT) {

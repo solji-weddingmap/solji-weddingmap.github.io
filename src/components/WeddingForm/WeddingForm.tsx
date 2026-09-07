@@ -2,11 +2,12 @@ import { useState } from 'react'
 import { ImagePlus, X, Check } from 'lucide-react'
 import type { CeremonyType, RegionCode, WeddingHallInput } from '@/types/weddingHall'
 import AddressSearchField from './AddressSearchField'
+import BusinessSearchField from './BusinessSearchField'
 import LocationPickerMap from '@/components/KakaoMap/LocationPickerMap'
 import { uploadWeddingHallImage } from '@/services/storageService'
 import ErrorBanner from '@/components/common/ErrorBanner'
 import { cn } from '@/utils/cn'
-import type { AddressSearchResult } from '@/lib/kakao'
+import type { AddressSearchResult, PlaceSearchResult } from '@/lib/kakao'
 
 const STEPS = ['기본정보', '예식정보', '비용정보', '시설정보', '기타정보'] as const
 
@@ -133,6 +134,20 @@ export default function WeddingForm({ initial, submitLabel, onSubmit, onCancel }
     }))
   }
 
+  function handlePlaceSelect(result: PlaceSearchResult) {
+    const address = result.roadAddress ?? result.address
+    setData((d) => ({
+      ...d,
+      name: result.placeName || d.name,
+      address,
+      region: inferRegion(address),
+      district: inferDistrict(address) || d.district,
+      latitude: result.latitude,
+      longitude: result.longitude,
+      phone: result.phone || d.phone,
+    }))
+  }
+
   function validateStep(): string | null {
     if (step === 0) {
       if (!data.name.trim()) return '웨딩홀명을 입력해주세요.'
@@ -216,6 +231,8 @@ export default function WeddingForm({ initial, submitLabel, onSubmit, onCancel }
       <div className="rounded-xl2 border border-line bg-white p-6">
         {step === 0 && (
           <div className="space-y-5">
+            <BusinessSearchField onSelect={handlePlaceSelect} />
+
             <Field label="웨딩홀명" required>
               <input
                 type="text"

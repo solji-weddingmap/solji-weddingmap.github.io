@@ -251,3 +251,24 @@ export async function deleteWeddingHall(id: string): Promise<void> {
     throw toAppError('웨딩홀 삭제에 실패했습니다. 잠시 후 다시 시도해주세요.', 'deleteWeddingHall failed', err)
   }
 }
+
+// 관리자 페이지의 체크박스 선택 삭제/일괄 삭제에서 사용 - 여러 건을 한 번의
+// 요청으로 지운다 (Supabase 모드에서는 .in('id', ids) 한 번으로 처리).
+export async function deleteWeddingHalls(ids: string[]): Promise<void> {
+  if (ids.length === 0) return
+
+  if (!isSupabaseConfigured || !supabase) {
+    const idSet = new Set(ids)
+    memoryStore = memoryStore.filter((h) => !idSet.has(h.id))
+    return
+  }
+  try {
+    const { error } = await supabase.from(WEDDING_HALL_TABLE).delete().in('id', ids)
+    if (error) throw error
+  } catch (err) {
+    if (isRlsError(err)) {
+      throw toAppError('관리자만 웨딩홀을 삭제할 수 있습니다.', 'deleteWeddingHalls failed: RLS', err)
+    }
+    throw toAppError('선택한 웨딩홀 삭제에 실패했습니다. 잠시 후 다시 시도해주세요.', 'deleteWeddingHalls failed', err)
+  }
+}

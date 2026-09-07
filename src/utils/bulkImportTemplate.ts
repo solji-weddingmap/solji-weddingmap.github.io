@@ -22,13 +22,11 @@ export const TEMPLATE_COLUMNS: TemplateColumn[] = [
   { key: 'district', label: '구/시', example: '강남구', note: '비워두면 주소에서 자동으로 추출을 시도합니다.' },
   { key: 'address', label: '주소*', example: '서울 강남구 테헤란로 123' },
   { key: 'detailAddress', label: '상세주소', example: '3층 그랜드홀' },
-  { key: 'latitude', label: '위도', example: '', note: '비워두면 주소로 카카오맵에서 자동으로 좌표를 찾습니다.' },
-  { key: 'longitude', label: '경도', example: '', note: '비워두면 주소로 카카오맵에서 자동으로 좌표를 찾습니다.' },
   {
     key: 'mainImage',
     label: '대표 이미지 URL',
     example: '',
-    note: '이미 인터넷에 올라가 있는 이미지 주소만 가능합니다 (파일 첨부 불가). 비워두면 나중에 수정 화면에서 업로드할 수 있어요.',
+    note: '이미 인터넷에 올라가 있는 이미지 주소만 가능합니다 (파일 첨부 불가). 비워둬도 등록은 진행되며, 나중에 수정 화면에서 업로드할 수 있어요.',
   },
   { key: 'images', label: '추가 이미지 URL', example: '', note: '여러 개는 쉼표(,)로 구분해주세요.' },
   { key: 'homepage', label: '홈페이지 URL', example: 'https://www.example.com/' },
@@ -67,6 +65,7 @@ export async function downloadBulkImportTemplate(): Promise<void> {
     ...TEMPLATE_COLUMNS.map((c) => [c.label, c.note ?? '']),
     ['', ''],
     ['※ 2행은 작성 예시입니다', '실제 데이터로 덮어쓰거나 행 자체를 삭제한 뒤 3행부터 입력해주세요.'],
+    ['좌표(위도/경도)', '따로 입력할 필요 없어요 - 등록 시 주소로 카카오맵에서 자동으로 찾습니다.'],
     ['지역 값', '서울 / 경기 / 인천'],
     ['구/시 예시 (서울)', DISTRICTS_BY_REGION.seoul.join(', ')],
     ['구/시 예시 (경기)', DISTRICTS_BY_REGION.gyeonggi.join(', ')],
@@ -116,8 +115,8 @@ function parseYesNo(raw: string): boolean {
 }
 
 interface ParseOptions {
-  // 주소만 있고 위도/경도가 비어있는 행을 위한 지오코딩 함수 - 카카오맵이
-  // 설정/로드되어 있지 않으면 null을 반환하도록 호출부에서 구현한다.
+  // 양식에 위도/경도 컬럼이 없으므로 모든 행의 좌표를 주소로 지오코딩한다 -
+  // 카카오맵이 설정/로드되어 있지 않으면 null을 반환하도록 호출부에서 구현한다.
   geocode: (address: string) => Promise<{ lat: number; lng: number } | null>
 }
 
@@ -174,26 +173,23 @@ export async function parseBulkImportFile(file: File, options: ParseOptions): Pr
       continue
     }
 
-    let latitude = parseNumber(cell(row, 'latitude'))
-    let longitude = parseNumber(cell(row, 'longitude'))
-
-    if (latitude === undefined || longitude === undefined) {
-      try {
-        const geo = await options.geocode(address)
-        if (geo) {
-          latitude = geo.lat
-          longitude = geo.lng
-        }
-      } catch {
-        // fall through - 아래에서 undefined 체크로 에러 처리
+    let latitude: number | undefined
+    let longitude: number | undefined
+    try {
+      const geo = await options.geocode(address)
+      if (geo) {
+        latitude = geo.lat
+        longitude = geo.lng
       }
+    } catch {
+      // fall through - 아래에서 undefined 체크로 에러 처리
     }
 
     if (latitude === undefined || longitude === undefined) {
       results.push({
         rowNumber,
         name,
-        error: '주소로 좌표를 찾지 못했습니다. 위도/경도를 직접 입력하거나 정확한 주소로 다시 시도해주세요.',
+        error: '주소로 좌표를 찾지 못했습니다. 정확한 주소(도로명 또는 지번)로 다시 확인해주세요.',
       })
       continue
     }

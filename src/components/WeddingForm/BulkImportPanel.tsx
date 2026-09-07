@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useRef, useState, type DragEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { CheckCircle2, Download, FileSpreadsheet, Loader2, UploadCloud, XCircle } from 'lucide-react'
 import { isKakaoConfigured, searchAddress } from '@/lib/kakao'
@@ -37,6 +37,7 @@ export default function BulkImportPanel({ userId, onCreated }: BulkImportPanelPr
   const [rows, setRows] = useState<BulkImportRow[]>([])
   const [results, setResults] = useState<SubmitResult[]>([])
   const [progress, setProgress] = useState(0)
+  const [isDragging, setIsDragging] = useState(false)
 
   const validRows = rows.filter((r) => r.input)
   const invalidRows = rows.filter((r) => !r.input)
@@ -54,6 +55,10 @@ export default function BulkImportPanel({ userId, onCreated }: BulkImportPanelPr
 
   async function handleFileChange(file: File | null) {
     if (!file) return
+    if (!/\.(xlsx|xls)$/i.test(file.name)) {
+      setParseError('엑셀 파일(.xlsx, .xls)만 업로드할 수 있어요.')
+      return
+    }
     setFileName(file.name)
     setParseError(null)
     setStage('parsing')
@@ -65,6 +70,26 @@ export default function BulkImportPanel({ userId, onCreated }: BulkImportPanelPr
       setParseError(err instanceof Error ? err.message : '엑셀 파일을 읽는 데 실패했습니다.')
       setStage('idle')
     }
+  }
+
+  function handleDragOver(e: DragEvent<HTMLLabelElement>) {
+    e.preventDefault()
+    e.stopPropagation()
+    setIsDragging(true)
+  }
+
+  function handleDragLeave(e: DragEvent<HTMLLabelElement>) {
+    e.preventDefault()
+    e.stopPropagation()
+    setIsDragging(false)
+  }
+
+  function handleDrop(e: DragEvent<HTMLLabelElement>) {
+    e.preventDefault()
+    e.stopPropagation()
+    setIsDragging(false)
+    const file = e.dataTransfer.files?.[0] ?? null
+    handleFileChange(file)
   }
 
   async function handleStartImport() {
@@ -126,9 +151,19 @@ export default function BulkImportPanel({ userId, onCreated }: BulkImportPanelPr
 
       {stage === 'idle' && (
         <div>
-          <label className="flex cursor-pointer flex-col items-center gap-2 rounded-xl border border-dashed border-line px-4 py-8 text-center text-sm text-subtext hover:bg-beige">
+          <label
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+            className={cn(
+              'flex cursor-pointer flex-col items-center gap-2 rounded-xl border border-dashed px-4 py-8 text-center text-sm transition-colors',
+              isDragging ? 'border-olive bg-olive-light/40 text-olive-dark' : 'border-line text-subtext hover:bg-beige',
+            )}
+          >
             <UploadCloud size={22} />
-            <span>작성한 엑셀 파일(.xlsx)을 선택해주세요</span>
+            <span>
+              {isDragging ? '여기에 놓으면 업로드돼요' : '작성한 엑셀 파일(.xlsx)을 드래그하거나 클릭해서 선택해주세요'}
+            </span>
             <input
               ref={fileInputRef}
               type="file"

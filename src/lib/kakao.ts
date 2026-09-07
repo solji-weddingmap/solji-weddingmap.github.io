@@ -100,6 +100,13 @@ export interface PlaceSearchResult extends AddressSearchResult {
   placeName: string
   phone?: string
   categoryName?: string
+  // Link to this place's page on Kakao Map (place.map.kakao.com/...) - NOT
+  // the business's own homepage. Kakao's public keyword-search API (the one
+  // this SDK call uses) doesn't expose a homepage URL or photos at all, even
+  // though the Kakao Map website/app shows them - that data comes from an
+  // internal, non-public source. We surface this link so an admin can jump
+  // to the Kakao Map listing and copy the real homepage/photos manually.
+  placeUrl?: string
 }
 
 export function searchPlaces(query: string): Promise<PlaceSearchResult[]> {
@@ -120,6 +127,7 @@ export function searchPlaces(query: string): Promise<PlaceSearchResult[]> {
             longitude: parseFloat(r.x),
             phone: r.phone || undefined,
             categoryName: r.category_name || undefined,
+            placeUrl: r.place_url || undefined,
           })),
         )
       } else if (status === window.kakao.maps.services.Status.ZERO_RESULT) {

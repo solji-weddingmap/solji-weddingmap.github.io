@@ -21,6 +21,13 @@ function generateId(): string {
   return `hall-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
 }
 
+// Postgres RLS-violation code, thrown when a non-admin tries to write to
+// wedding_halls (see supabase/admin_schema.sql) - surfaced with a clearer
+// Korean message instead of the raw Postgres error.
+function isRlsError(err: unknown): boolean {
+  return Boolean(err && typeof err === 'object' && 'code' in err && (err as { code?: string }).code === '42501')
+}
+
 // snake_case (DB) <-> camelCase (app) mapping ------------------------------
 
 interface WeddingHallRow {
@@ -187,6 +194,9 @@ export async function createWeddingHall(input: WeddingHallInput, userId?: string
     if (error) throw error
     return rowToHall(data as WeddingHallRow)
   } catch (err) {
+    if (isRlsError(err)) {
+      throw toAppError('관리자만 웨딩홀을 등록할 수 있습니다.', 'createWeddingHall failed: RLS', err)
+    }
     throw toAppError(
       '웨딩홀 등록에 실패했습니다. 입력 내용을 확인한 뒤 다시 시도해주세요.',
       'createWeddingHall failed',
@@ -219,6 +229,9 @@ export async function updateWeddingHall(id: string, input: WeddingHallInput): Pr
     if (error) throw error
     return rowToHall(data as WeddingHallRow)
   } catch (err) {
+    if (isRlsError(err)) {
+      throw toAppError('관리자만 웨딩홀을 수정할 수 있습니다.', 'updateWeddingHall failed: RLS', err)
+    }
     throw toAppError('웨딩홀 수정에 실패했습니다. 잠시 후 다시 시도해주세요.', 'updateWeddingHall failed', err)
   }
 }
@@ -232,6 +245,9 @@ export async function deleteWeddingHall(id: string): Promise<void> {
     const { error } = await supabase.from(WEDDING_HALL_TABLE).delete().eq('id', id)
     if (error) throw error
   } catch (err) {
+    if (isRlsError(err)) {
+      throw toAppError('관리자만 웨딩홀을 삭제할 수 있습니다.', 'deleteWeddingHall failed: RLS', err)
+    }
     throw toAppError('웨딩홀 삭제에 실패했습니다. 잠시 후 다시 시도해주세요.', 'deleteWeddingHall failed', err)
   }
 }

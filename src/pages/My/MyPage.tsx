@@ -110,7 +110,7 @@ export default function MyPage() {
   const navigate = useNavigate()
   const { halls } = useWeddingHalls()
   const { favoriteIds } = useFavorites()
-  const { user, profile, loading: authLoading, authAvailable, logout } = useAuth()
+  const { user, profile, isAdmin, loading: authLoading, authAvailable, logout } = useAuth()
 
   const [openSection, setOpenSection] = useState<'recent' | 'mine' | null>(null)
   const [recentIds, setRecentIds] = useState<string[]>([])
@@ -167,7 +167,14 @@ export default function MyPage() {
               )}
             </div>
             <div className="min-w-0 flex-1">
-              <p className="truncate text-lg font-bold text-ink">{profile?.nickname || user.email}</p>
+              <div className="flex items-center gap-1.5">
+                <p className="truncate text-lg font-bold text-ink">{profile?.nickname || user.email}</p>
+                {isAdmin && (
+                  <span className="shrink-0 rounded-full bg-olive px-2 py-0.5 text-[10px] font-semibold text-white">
+                    관리자
+                  </span>
+                )}
+              </div>
               <p className="truncate text-sm text-subtext">행복한 결혼 준비 되세요!</p>
             </div>
             <button

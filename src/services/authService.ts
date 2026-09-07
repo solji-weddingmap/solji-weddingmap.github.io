@@ -16,16 +16,18 @@ export interface Profile {
   id: string
   nickname: string
   avatarUrl: string | null
+  isAdmin: boolean
 }
 
 interface ProfileRow {
   id: string
   nickname: string
   avatar_url: string | null
+  is_admin: boolean | null
 }
 
 function rowToProfile(row: ProfileRow): Profile {
-  return { id: row.id, nickname: row.nickname, avatarUrl: row.avatar_url }
+  return { id: row.id, nickname: row.nickname, avatarUrl: row.avatar_url, isAdmin: row.is_admin ?? false }
 }
 
 export function isAuthConfigured(): boolean {
@@ -131,6 +133,7 @@ export async function updateProfile(
 function translateAuthError(message: string): string {
   if (/already registered/i.test(message)) return '이미 가입된 이메일입니다.'
   if (/invalid login credentials/i.test(message)) return '이메일 또는 비밀번호가 올바르지 않습니다.'
+  if (/email not confirmed/i.test(message)) return '이메일 인증이 필요합니다. 가입 시 받은 메일에서 인증 링크를 눌러주세요.'
   if (/password should be at least/i.test(message)) return '비밀번호는 6자 이상이어야 합니다.'
   if (/unable to validate email/i.test(message) || /invalid email/i.test(message)) return '올바른 이메일 형식이 아닙니다.'
   if (/rate limit/i.test(message)) return '요청이 너무 많습니다. 잠시 후 다시 시도해주세요.'

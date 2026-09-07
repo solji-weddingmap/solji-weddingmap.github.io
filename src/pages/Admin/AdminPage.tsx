@@ -1,26 +1,28 @@
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Pencil, Trash2, Plus } from 'lucide-react'
+import { Pencil, Trash2, Plus, ShieldAlert } from 'lucide-react'
 import Header from '@/components/Header/Header'
 import SearchBar from '@/components/SearchBar/SearchBar'
 import ErrorBanner from '@/components/common/ErrorBanner'
 import EmptyState from '@/components/common/EmptyState'
 import { useWeddingHalls } from '@/hooks/useWeddingHalls'
 import { deleteWeddingHall } from '@/services/weddingHallService'
+import { useAuth } from '@/context/AuthContext'
 import { formatDate, formatMealPrice } from '@/utils/format'
 import { matchesKeyword } from '@/utils/filterSort'
 import { regionLabel } from '@/utils/regions'
 
-// Simple table-based admin view (spec #34). No separate admin login yet, but
-// all reads/writes already go through services/weddingHallService.ts, so
-// wiring up auth later only means gating this route - no data-layer changes.
+// 웨딩홀 관리 화면 - 등록/수정/삭제와 마찬가지로 관리자 전용 (Supabase RLS로
+// 실제 강제되며, 여기서는 비관리자에게 아예 화면을 보여주지 않는다).
 export default function AdminPage() {
   const { halls, loading, error, refetch } = useWeddingHalls()
+  const { isAdmin, loading: authLoading, authAvailable, isLoggedIn } = useAuth()
   const [keyword, setKeyword] = useState('')
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [actionError, setActionError] = useState<string | null>(null)
 
   const filtered = useMemo(() => halls.filter((h) => matchesKeyword(h, keyword)), [halls, keyword])
+  const canManage = !authAvailable || isAdmin
 
   async function handleDelete(id: string, name: string) {
     if (!window.confirm(`'${name}'을(를) 삭제하시겠습니까?`)) return
@@ -34,6 +36,38 @@ export default function AdminPage() {
     } finally {
       setDeletingId(null)
     }
+  }
+
+  if (authAvailable && authLoading) {
+    return (
+      <div className="min-h-screen bg-beige">
+        <Header />
+        <p className="py-20 text-center text-subtext">불러오는 중...</p>
+      </div>
+    )
+  }
+
+  if (!canManage) {
+    return (
+      <div className="min-h-screen bg-beige">
+        <Header />
+        <div className="mx-auto flex max-w-sm flex-col items-center px-6 py-20 text-center">
+          <div className="flex h-20 w-20 items-center justify-center rounded-full bg-olive-light">
+            <ShieldAlert size={32} className="text-olive-dark" strokeWidth={1.75} />
+          </div>
+          <h1 className="mt-6 text-lg font-bold text-ink">관리자만 이용할 수 있어요</h1>
+          <p className="mt-2 text-sm text-subtext">웨딩홀 관리는 관리자 계정으로 로그인한 경우에만 가능합니다.</p>
+          {!isLoggedIn && (
+            <Link
+              to="/login"
+              className="mt-8 w-full rounded-full bg-olive py-3 text-sm font-semibold text-white transition hover:bg-olive-dark"
+            >
+              로그인하러 가기
+            </Link>
+          )}
+        </div>
+      </div>
+    )
   }
 
   return (

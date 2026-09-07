@@ -15,6 +15,7 @@ interface AuthContextValue {
   profile: Profile | null
   loading: boolean
   isLoggedIn: boolean
+  isAdmin: boolean
   authAvailable: boolean
   refreshProfile: () => Promise<void>
   logout: () => Promise<void>
@@ -91,6 +92,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     profile,
     loading,
     isLoggedIn: Boolean(session?.user),
+    isAdmin: Boolean(profile?.isAdmin),
     authAvailable: isAuthConfigured(),
     refreshProfile,
     logout,

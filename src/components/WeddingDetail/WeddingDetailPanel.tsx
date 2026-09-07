@@ -30,7 +30,8 @@ export default function WeddingDetailPanel({
   onShowOnMap,
 }: WeddingDetailPanelProps) {
   const navigate = useNavigate()
-  const { user } = useAuth()
+  const { user, isAdmin, authAvailable } = useAuth()
+  const canManage = !authAvailable || isAdmin
   const [tab, setTab] = useState<(typeof TABS)[number]>('기본정보')
   const [imageIndex, setImageIndex] = useState(0)
   const [deleting, setDeleting] = useState(false)
@@ -280,21 +281,25 @@ export default function WeddingDetailPanel({
         >
           <MapPin size={15} /> 지도에서 보기
         </button>
-        <button
-          type="button"
-          onClick={() => navigate(`/register/${hall.id}`)}
-          className="flex flex-1 items-center justify-center gap-1.5 rounded-full border border-line py-2.5 text-sm font-medium hover:bg-beige"
-        >
-          <Pencil size={15} /> 수정
-        </button>
-        <button
-          type="button"
-          onClick={handleDelete}
-          disabled={deleting}
-          className="flex flex-1 items-center justify-center gap-1.5 rounded-full border border-red-200 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50 disabled:opacity-60"
-        >
-          <Trash2 size={15} /> {deleting ? '삭제 중...' : '삭제'}
-        </button>
+        {canManage && (
+          <button
+            type="button"
+            onClick={() => navigate(`/register/${hall.id}`)}
+            className="flex flex-1 items-center justify-center gap-1.5 rounded-full border border-line py-2.5 text-sm font-medium hover:bg-beige"
+          >
+            <Pencil size={15} /> 수정
+          </button>
+        )}
+        {canManage && (
+          <button
+            type="button"
+            onClick={handleDelete}
+            disabled={deleting}
+            className="flex flex-1 items-center justify-center gap-1.5 rounded-full border border-red-200 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50 disabled:opacity-60"
+          >
+            <Trash2 size={15} /> {deleting ? '삭제 중...' : '삭제'}
+          </button>
+        )}
       </div>
     </div>
   )

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
-import { ClipboardCheck } from 'lucide-react'
+import { useNavigate, useParams, Link } from 'react-router-dom'
+import { ClipboardCheck, ShieldAlert } from 'lucide-react'
 import Header from '@/components/Header/Header'
 import WeddingForm from '@/components/WeddingForm/WeddingForm'
 import ErrorBanner from '@/components/common/ErrorBanner'
@@ -20,7 +20,7 @@ interface WeddingRegisterPageProps {
 export default function WeddingRegisterPage({ mode }: WeddingRegisterPageProps) {
   const navigate = useNavigate()
   const { id } = useParams<{ id: string }>()
-  const { user } = useAuth()
+  const { user, isAdmin, loading: authLoading, authAvailable, isLoggedIn } = useAuth()
   const [existing, setExisting] = useState<WeddingHall | null>(null)
   const [loading, setLoading] = useState(mode === 'edit')
   const [loadError, setLoadError] = useState<string | null>(null)
@@ -56,6 +56,54 @@ export default function WeddingRegisterPage({ mode }: WeddingRegisterPageProps) 
       // page (spec's 등록 완료 mockup) - the user picks where to go next.
       setCompletedHall(created)
     }
+  }
+
+  // 웨딩홀 등록/수정은 관리자만 가능 (Supabase RLS가 실제 강제하지만, 폼을 보여줬다가
+  // 제출 시점에 실패하는 것보다 미리 안내하는 게 낫다). authAvailable이 꺼져있는
+  // mock 모드(로컬 개발/데모)에서는 기존처럼 누구나 등록 가능하게 둔다.
+  const canRegister = !authAvailable || isAdmin
+
+  if (authAvailable && authLoading) {
+    return (
+      <div className="flex min-h-screen flex-col bg-beige">
+        <Header />
+        <p className="flex-1 py-20 text-center text-subtext">불러오는 중...</p>
+      </div>
+    )
+  }
+
+  if (!canRegister) {
+    return (
+      <div className="flex min-h-screen flex-col bg-beige">
+        <Header />
+        <div className="mx-auto flex w-full max-w-sm flex-1 flex-col items-center justify-center px-6 py-10 text-center">
+          <div className="flex h-20 w-20 items-center justify-center rounded-full bg-olive-light">
+            <ShieldAlert size={32} className="text-olive-dark" strokeWidth={1.75} />
+          </div>
+          <h1 className="mt-6 text-lg font-bold text-ink">관리자만 이용할 수 있어요</h1>
+          <p className="mt-2 text-sm text-subtext">
+            웨딩홀 등록/수정은 관리자 계정으로 로그인한 경우에만 가능합니다.
+          </p>
+          <div className="mt-8 w-full space-y-2.5">
+            {!isLoggedIn && (
+              <Link
+                to="/login"
+                className="block w-full rounded-full bg-olive py-3 text-sm font-semibold text-white transition hover:bg-olive-dark"
+              >
+                로그인하러 가기
+              </Link>
+            )}
+            <button
+              type="button"
+              onClick={() => navigate('/')}
+              className="w-full rounded-full border border-line bg-white py-3 text-sm font-medium text-ink transition hover:bg-beige"
+            >
+              홈으로 이동
+            </button>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   if (completedHall) {

@@ -138,7 +138,17 @@ export default function HomePage() {
           <KakaoMap
             halls={sorted}
             selectedId={mapActiveId}
-            onMarkerClick={(hall) => setPreviewHall(hall)}
+            onMarkerClick={(hall) => {
+              // 이미 상세보기 화면(데스크탑 사이드바 / 모바일 전체화면)이 열려있는
+              // 상태라면, 지도 핀을 눌렀을 때 굳이 닫았다가 다시 열지 않고 바로
+              // 그 웨딩홀의 상세 정보로 전환한다. 상세보기가 열려있지 않을 때는
+              // 기존처럼 미리보기 카드/시트만 띄운다 (모바일 스펙 유지).
+              if (selectedId) {
+                selectHall(hall)
+              } else {
+                setPreviewHall(hall)
+              }
+            }}
             onViewDetail={selectHall}
           />
 

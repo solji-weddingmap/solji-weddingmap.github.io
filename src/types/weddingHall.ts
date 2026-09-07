@@ -54,11 +54,16 @@ export interface WeddingHall {
 
   createdAt: string
   updatedAt: string
+
+  // Set server-side to the logged-in user's id at creation time (undefined
+  // for halls registered anonymously, or in mock mode). Lets "내가 등록한
+  // 웨딩홀" be queried per-account once login is used - see MyPage.
+  createdBy?: string
 }
 
 // Payload shape used by the registration / edit form before it becomes a
 // full WeddingHall (id/createdAt/updatedAt are assigned by the service layer).
-export type WeddingHallInput = Omit<WeddingHall, 'id' | 'createdAt' | 'updatedAt' | 'favorite'>
+export type WeddingHallInput = Omit<WeddingHall, 'id' | 'createdAt' | 'updatedAt' | 'favorite' | 'createdBy'>
 
 export type SortOption =
   | 'recommended'

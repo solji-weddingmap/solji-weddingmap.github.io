@@ -1,7 +1,10 @@
-// Tracks which wedding hall ids were registered from THIS browser, so the
-// 마이(My) page can show "내가 등록한 웨딩홀" without a real login/account
-// system (none exists yet - see README future features: 관리자 로그인,
-// 웨딩홀 업체 계정). Purely local to the device that created them.
+// Tracks which wedding hall ids were registered from THIS browser, for the
+// logged-out case (no account to attach the hall to yet).
+//
+// When a user IS logged in, "내가 등록한 웨딩홀" is instead read directly
+// from `wedding_halls.created_by` (set at creation time - see
+// weddingHallService.createWeddingHall) via MyPage's own query, so nothing
+// needs to be written here for that case.
 
 const STORAGE_KEY = 'wedding-map:my-registered-halls'
 
@@ -24,8 +27,9 @@ function writeIds(ids: string[]) {
   }
 }
 
-export function recordMyRegisteredHall(hallId: string) {
+export function recordMyRegisteredHall(hallId: string, userId?: string | null) {
   if (!hallId) return
+  if (userId) return // already tracked server-side via wedding_halls.created_by
   const ids = readIds().filter((id) => id !== hallId)
   ids.unshift(hallId)
   writeIds(ids)

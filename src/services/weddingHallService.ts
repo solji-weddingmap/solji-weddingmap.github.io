@@ -56,6 +56,7 @@ interface WeddingHallRow {
   review_count: number | null
   created_at: string
   updated_at: string
+  created_by: string | null
 }
 
 function rowToHall(row: WeddingHallRow): WeddingHall {
@@ -92,10 +93,13 @@ function rowToHall(row: WeddingHallRow): WeddingHall {
     reviewCount: row.review_count ?? undefined,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
+    createdBy: row.created_by ?? undefined,
   }
 }
 
-function hallToRow(input: WeddingHallInput): Omit<WeddingHallRow, 'id' | 'created_at' | 'updated_at'> {
+function hallToRow(
+  input: WeddingHallInput,
+): Omit<WeddingHallRow, 'id' | 'created_at' | 'updated_at' | 'created_by'> {
   return {
     name: input.name,
     region: input.region,
@@ -162,17 +166,23 @@ export async function fetchWeddingHallById(id: string): Promise<WeddingHall | nu
   }
 }
 
-export async function createWeddingHall(input: WeddingHallInput): Promise<WeddingHall> {
+export async function createWeddingHall(input: WeddingHallInput, userId?: string | null): Promise<WeddingHall> {
   const nowIso = new Date().toISOString()
 
   if (!isSupabaseConfigured || !supabase) {
-    const hall: WeddingHall = { ...input, id: generateId(), createdAt: nowIso, updatedAt: nowIso }
+    const hall: WeddingHall = {
+      ...input,
+      id: generateId(),
+      createdAt: nowIso,
+      updatedAt: nowIso,
+      createdBy: userId ?? undefined,
+    }
     memoryStore = [hall, ...memoryStore]
     return hall
   }
 
   try {
-    const row = hallToRow(input)
+    const row = { ...hallToRow(input), created_by: userId ?? null }
     const { data, error } = await supabase.from(WEDDING_HALL_TABLE).insert(row).select().single()
     if (error) throw error
     return rowToHall(data as WeddingHallRow)

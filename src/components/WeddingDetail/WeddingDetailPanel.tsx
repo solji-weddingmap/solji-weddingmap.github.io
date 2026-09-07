@@ -7,6 +7,7 @@ import { regionLabel } from '@/utils/regions'
 import FavoriteButton from '@/components/Favorite/FavoriteButton'
 import { deleteWeddingHall } from '@/services/weddingHallService'
 import { recordView } from '@/services/viewHistoryService'
+import { useAuth } from '@/context/AuthContext'
 import { cn } from '@/utils/cn'
 
 const TABS = ['기본정보', '시설/비용', '위치/교통', '리뷰'] as const
@@ -29,6 +30,7 @@ export default function WeddingDetailPanel({
   onShowOnMap,
 }: WeddingDetailPanelProps) {
   const navigate = useNavigate()
+  const { user } = useAuth()
   const [tab, setTab] = useState<(typeof TABS)[number]>('기본정보')
   const [imageIndex, setImageIndex] = useState(0)
   const [deleting, setDeleting] = useState(false)
@@ -37,8 +39,8 @@ export default function WeddingDetailPanel({
   const images = hall.images.length > 0 ? hall.images : hall.mainImage ? [hall.mainImage] : []
 
   useEffect(() => {
-    recordView(hall.id)
-  }, [hall.id])
+    void recordView(hall.id, user?.id)
+  }, [hall.id, user?.id])
 
   async function handleDelete() {
     if (!window.confirm(`'${hall.name}'을(를) 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.`)) return

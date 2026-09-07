@@ -10,6 +10,7 @@ import {
   updateWeddingHall,
 } from '@/services/weddingHallService'
 import { recordMyRegisteredHall } from '@/services/myRegisteredHallsService'
+import { useAuth } from '@/context/AuthContext'
 import type { WeddingHall, WeddingHallInput } from '@/types/weddingHall'
 
 interface WeddingRegisterPageProps {
@@ -19,6 +20,7 @@ interface WeddingRegisterPageProps {
 export default function WeddingRegisterPage({ mode }: WeddingRegisterPageProps) {
   const navigate = useNavigate()
   const { id } = useParams<{ id: string }>()
+  const { user } = useAuth()
   const [existing, setExisting] = useState<WeddingHall | null>(null)
   const [loading, setLoading] = useState(mode === 'edit')
   const [loadError, setLoadError] = useState<string | null>(null)
@@ -48,8 +50,8 @@ export default function WeddingRegisterPage({ mode }: WeddingRegisterPageProps) 
       await updateWeddingHall(id, input)
       navigate(`/wedding/${id}`)
     } else {
-      const created = await createWeddingHall(input)
-      recordMyRegisteredHall(created.id)
+      const created = await createWeddingHall(input, user?.id)
+      recordMyRegisteredHall(created.id, user?.id)
       // Show a completion screen instead of jumping straight to the detail
       // page (spec's 등록 완료 mockup) - the user picks where to go next.
       setCompletedHall(created)

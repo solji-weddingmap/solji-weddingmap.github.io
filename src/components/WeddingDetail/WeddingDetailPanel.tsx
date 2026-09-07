@@ -87,7 +87,7 @@ export default function WeddingDetailPanel({
         <button
           type="button"
           onClick={onClose}
-          aria-label="닫기"
+          aria-label="상세정보 닫기"
           className="absolute left-3 top-3 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 shadow-card"
         >
           <X size={16} />

@@ -196,7 +196,7 @@ export default function FilterBar({ filters, sort, onChange, onSortChange, resul
         </Dropdown>
 
         <div className="ml-auto flex items-center gap-2">
-          <Dropdown label={`정렬: ${SORT_OPTIONS.find((s) => s.key === sort)?.label}`}>
+          <Dropdown label={`정렬: ${SORT_OPTIONS.find((s) => s.key === sort)?.label}`} align="right">
             {(close) => (
               <RadioList
                 options={SORT_OPTIONS}

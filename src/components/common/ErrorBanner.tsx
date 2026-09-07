@@ -19,7 +19,7 @@ export default function ErrorBanner({ message, onDismiss, variant = 'error' }: E
       <AlertTriangle size={16} className="mt-0.5 shrink-0" />
       <p className="flex-1">{message}</p>
       {onDismiss && (
-        <button type="button" onClick={onDismiss} aria-label="닫기" className="shrink-0">
+        <button type="button" onClick={onDismiss} aria-label="알림 닫기" className="shrink-0">
           <X size={16} />
         </button>
       )}

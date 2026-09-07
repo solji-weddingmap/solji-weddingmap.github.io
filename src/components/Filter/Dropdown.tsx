@@ -7,9 +7,15 @@ interface DropdownProps {
   active?: boolean
   children: (close: () => void) => ReactNode
   panelClassName?: string
+  // 'right' opens the panel aligned to the button's right edge instead of its
+  // left edge - needed for dropdowns placed near the right side of a narrow
+  // container (e.g. the sort dropdown, pushed right via ml-auto), otherwise
+  // the panel can overflow past the sidebar's edge and get clipped by the
+  // ancestor's `overflow-hidden` (see HomePage's desktop sidebar column).
+  align?: 'left' | 'right'
 }
 
-export default function Dropdown({ label, active, children, panelClassName }: DropdownProps) {
+export default function Dropdown({ label, active, children, panelClassName, align = 'left' }: DropdownProps) {
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
 
@@ -37,7 +43,8 @@ export default function Dropdown({ label, active, children, panelClassName }: Dr
       {open && (
         <div
           className={cn(
-            'absolute left-0 top-[calc(100%+8px)] z-40 min-w-[220px] rounded-xl2 border border-line bg-white p-4 shadow-popover',
+            'absolute top-[calc(100%+8px)] z-40 min-w-[220px] rounded-xl2 border border-line bg-white p-4 shadow-popover',
+            align === 'right' ? 'right-0' : 'left-0',
             panelClassName,
           )}
         >

@@ -273,26 +273,8 @@ export default function WeddingDetailPanel({
         </div>
       )}
 
-      <div className="sticky bottom-0 flex gap-2 border-t border-line bg-white px-5 py-4">
-        {hall.homepage ? (
-          <a
-            href={hall.homepage}
-            target="_blank"
-            rel="noreferrer"
-            className="flex flex-1 items-center justify-center gap-1.5 rounded-full border border-line py-2.5 text-sm font-medium hover:bg-beige"
-          >
-            <ExternalLink size={15} /> 홈페이지 바로가기
-          </a>
-        ) : (
-          <button
-            type="button"
-            disabled
-            className="flex flex-1 cursor-not-allowed items-center justify-center gap-1.5 rounded-full border border-line py-2.5 text-sm font-medium text-subtext opacity-60"
-          >
-            <ExternalLink size={15} /> 홈페이지 정보 없음
-          </button>
-        )}
-        {canManage && (
+      {canManage && (
+        <div className="sticky bottom-0 flex gap-2 border-t border-line bg-white px-5 py-4">
           <button
             type="button"
             onClick={() => navigate(`/register/${hall.id}`)}
@@ -300,8 +282,6 @@ export default function WeddingDetailPanel({
           >
             <Pencil size={15} /> 수정
           </button>
-        )}
-        {canManage && (
           <button
             type="button"
             onClick={handleDelete}
@@ -310,8 +290,8 @@ export default function WeddingDetailPanel({
           >
             <Trash2 size={15} /> {deleting ? '삭제 중...' : '삭제'}
           </button>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   )
 }

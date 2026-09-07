@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { Heart, MapPin, Settings, UserRound } from 'lucide-react'
+import { Heart, Settings, UserRound } from 'lucide-react'
 import { useAuth } from '@/context/AuthContext'
 
 export default function Header() {
@@ -25,13 +25,6 @@ export default function Header() {
             관리자
           </Link>
         )}
-        <Link
-          to="/"
-          className="hidden items-center gap-1.5 rounded-full px-3 py-2 text-sm text-subtext hover:bg-beige md:flex"
-        >
-          <MapPin size={16} />
-          웨딩홀 찾기
-        </Link>
         {/* Desktop: header shortcut. Mobile: the bottom nav's 찜 tab covers this,
             so only a compact icon-only link is kept here (spec home mockup). */}
         <Link

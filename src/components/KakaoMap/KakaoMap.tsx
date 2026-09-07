@@ -78,7 +78,10 @@ export default function KakaoMap({ halls, selectedId, onMarkerClick, onViewDetai
     closeOverlay()
 
     const content = document.createElement('div')
-    content.className = 'kakao-overlay-card'
+    // 이 카드는 데스크탑 전용이다 (spec: 모바일은 MapPreviewSheet가 대신 뜬다).
+    // `selectedId`가 바뀔 때마다 무조건 열리므로, 모바일 뷰포트에서는 화면
+    // 밖으로 잘려 보이는 버그가 있었다 - Tailwind 반응형 클래스로 숨긴다.
+    content.className = 'kakao-overlay-card hidden md:block'
     content.innerHTML = `
       <div style="position:relative">
         <div style="height:96px;background:#E6E7E1;overflow:hidden">

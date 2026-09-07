@@ -274,13 +274,24 @@ export default function WeddingDetailPanel({
       )}
 
       <div className="sticky bottom-0 flex gap-2 border-t border-line bg-white px-5 py-4">
-        <button
-          type="button"
-          onClick={onShowOnMap}
-          className="flex flex-1 items-center justify-center gap-1.5 rounded-full border border-line py-2.5 text-sm font-medium hover:bg-beige"
-        >
-          <MapPin size={15} /> 지도에서 보기
-        </button>
+        {hall.homepage ? (
+          <a
+            href={hall.homepage}
+            target="_blank"
+            rel="noreferrer"
+            className="flex flex-1 items-center justify-center gap-1.5 rounded-full border border-line py-2.5 text-sm font-medium hover:bg-beige"
+          >
+            <ExternalLink size={15} /> 홈페이지 바로가기
+          </a>
+        ) : (
+          <button
+            type="button"
+            disabled
+            className="flex flex-1 cursor-not-allowed items-center justify-center gap-1.5 rounded-full border border-line py-2.5 text-sm font-medium text-subtext opacity-60"
+          >
+            <ExternalLink size={15} /> 홈페이지 정보 없음
+          </button>
+        )}
         {canManage && (
           <button
             type="button"

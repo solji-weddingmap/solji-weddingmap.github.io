@@ -264,6 +264,7 @@ export default function MyPage() {
           </div>
         </div>
 
+        {(!authAvailable || isAdmin) && (
         <div className="mt-6 px-4">
           <p className="mb-2 px-1 text-xs font-semibold text-subtext">관리</p>
           <div className="rounded-2xl border border-line bg-white shadow-card">
@@ -288,6 +289,7 @@ export default function MyPage() {
             </button>
           </div>
         </div>
+        )}
 
         <div className="mt-6 px-4">
           <p className="mb-2 px-1 text-xs font-semibold text-subtext">설정</p>

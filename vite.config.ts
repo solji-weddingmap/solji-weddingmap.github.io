@@ -9,7 +9,7 @@ import react from '@vitejs/plugin-react'
 // If you deploy to a *user/organization* site (https://<username>.github.io/)
 // or to a custom domain, set REPO_NAME to '' instead.
 // ---------------------------------------------------------------------------
-const REPO_NAME = 'wedding-map'
+const REPO_NAME = ''
 
 export default defineConfig({
   base: process.env.VITE_BASE_PATH ?? (REPO_NAME ? `/${REPO_NAME}/` : '/'),

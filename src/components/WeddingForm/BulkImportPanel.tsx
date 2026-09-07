@@ -139,7 +139,7 @@ export default function BulkImportPanel({ userId, onCreated }: BulkImportPanelPr
           </label>
           {!isKakaoConfigured && (
             <p className="mt-2 text-xs text-subtext">
-              카카오맵 API Key가 없어 주소 자동 좌표 검색이 비활성화되어 있어요. 위도/경도 컬럼을 직접 채워주세요.
+              카카오맵 API Key가 없어 주소로 좌표를 자동으로 찾을 수 없어요. 지금은 일괄 등록을 사용할 수 없습니다.
             </p>
           )}
           {parseError && (

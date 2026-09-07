@@ -24,16 +24,21 @@ export default function Header() {
           <MapPin size={16} />
           웨딩홀 찾기
         </Link>
-        <button
-          type="button"
+        {/* Desktop: header shortcut. Mobile: the bottom nav's 찜 tab covers this,
+            so only a compact icon-only link is kept here (spec home mockup). */}
+        <Link
+          to="/favorites"
           className="hidden items-center gap-1.5 rounded-full px-3 py-2 text-sm text-subtext hover:bg-beige md:flex"
           aria-label="즐겨찾기"
         >
           <Heart size={16} />
-        </button>
+        </Link>
+        <Link to="/favorites" className="flex items-center justify-center p-2 text-ink md:hidden" aria-label="찜한 웨딩홀">
+          <Heart size={20} strokeWidth={1.75} />
+        </Link>
         <Link
           to="/register"
-          className="rounded-full bg-olive px-4 py-2 text-sm font-medium text-white shadow-card transition hover:bg-olive-dark"
+          className="hidden rounded-full bg-olive px-4 py-2 text-sm font-medium text-white shadow-card transition hover:bg-olive-dark md:inline-flex"
         >
           + 웨딩홀 등록
         </Link>

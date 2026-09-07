@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { X, MapPin, ExternalLink, Pencil, Trash2, Phone, Star, ImageOff } from 'lucide-react'
 import type { WeddingHall } from '@/types/weddingHall'
@@ -6,6 +6,7 @@ import { formatManwon, formatMealPrice, formatGuests, formatParking } from '@/ut
 import { regionLabel } from '@/utils/regions'
 import FavoriteButton from '@/components/Favorite/FavoriteButton'
 import { deleteWeddingHall } from '@/services/weddingHallService'
+import { recordView } from '@/services/viewHistoryService'
 import { cn } from '@/utils/cn'
 
 const TABS = ['기본정보', '시설/비용', '위치/교통', '리뷰'] as const
@@ -34,6 +35,10 @@ export default function WeddingDetailPanel({
   const [deleteError, setDeleteError] = useState<string | null>(null)
 
   const images = hall.images.length > 0 ? hall.images : hall.mainImage ? [hall.mainImage] : []
+
+  useEffect(() => {
+    recordView(hall.id)
+  }, [hall.id])
 
   async function handleDelete() {
     if (!window.confirm(`'${hall.name}'을(를) 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.`)) return

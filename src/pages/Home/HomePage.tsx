@@ -5,17 +5,18 @@ import SearchBar from '@/components/SearchBar/SearchBar'
 import FilterBar from '@/components/Filter/FilterBar'
 import WeddingList from '@/components/WeddingList/WeddingList'
 import KakaoMap from '@/components/KakaoMap/KakaoMap'
+import MapPreviewSheet from '@/components/KakaoMap/MapPreviewSheet'
 import WeddingDetailPanel from '@/components/WeddingDetail/WeddingDetailPanel'
 import MobileNav from '@/components/common/MobileNav'
-import BottomSheet from '@/components/common/BottomSheet'
 import ErrorBanner from '@/components/common/ErrorBanner'
 import { useWeddingHalls } from '@/hooks/useWeddingHalls'
 import { useFavorites } from '@/hooks/useFavorites'
 import { DEFAULT_FILTERS, type SortOption, type WeddingHall, type WeddingHallFilters } from '@/types/weddingHall'
 import { applyFilters, applySort } from '@/utils/filterSort'
 import { isKakaoConfigured } from '@/lib/kakao'
-import { isSupabaseConfigured } from '@/lib/supabase'
 
+// 홈 = 지도 + 웨딩홀 리스트만. 검색창/지역 퀵필터는 하단 '검색' 탭 전용 화면
+// (SearchPage)으로 옮겼다 - 모바일 스펙 3번 "홈에는 검색/필터를 두지 않는다".
 export default function HomePage() {
   const navigate = useNavigate()
   const params = useParams<{ id?: string }>()
@@ -24,8 +25,10 @@ export default function HomePage() {
 
   const [filters, setFilters] = useState<WeddingHallFilters>(DEFAULT_FILTERS)
   const [sort, setSort] = useState<SortOption>('recommended')
-  const [mobileExpanded, setMobileExpanded] = useState(false)
   const [dismissedInfoBanner, setDismissedInfoBanner] = useState(false)
+  // Mobile only: the hall a map marker was tapped for (mini preview sheet),
+  // distinct from `selectedId` (route-driven, opens the FULL detail screen).
+  const [previewHall, setPreviewHall] = useState<WeddingHall | null>(null)
 
   const selectedId = params.id ?? null
 
@@ -37,14 +40,24 @@ export default function HomePage() {
     [halls, selectedId],
   )
 
+  // The map highlights/pans to whichever hall is currently "active": a full
+  // detail selection takes priority, otherwise a marker-tap preview.
+  const mapActiveId = selectedId ?? previewHall?.id ?? null
+
   function selectHall(hall: WeddingHall) {
+    setPreviewHall(null)
     navigate(`/wedding/${hall.id}`)
-    setMobileExpanded(false)
   }
 
   function closeDetail() {
     navigate('/')
   }
+
+  useEffect(() => {
+    // opening the full detail screen (list click, or the map overlay's own
+    // "상세보기" button) always supersedes the marker preview sheet
+    if (selectedId) setPreviewHall(null)
+  }, [selectedId])
 
   useEffect(() => {
     // if the deep-linked hall no longer exists (e.g. deleted), fall back to list
@@ -57,10 +70,11 @@ export default function HomePage() {
     <div className="flex h-screen flex-col overflow-hidden bg-beige">
       <Header />
 
-      <div className="flex flex-1 overflow-hidden">
-        {/* Desktop: list column */}
-        <div className="hidden w-[420px] shrink-0 flex-col overflow-hidden border-r border-line bg-beige md:flex">
-          <div className="space-y-3 border-b border-line bg-white px-4 py-4">
+      <div className="flex flex-1 flex-col overflow-hidden md:flex-row">
+        {/* List column: desktop = fixed-width sidebar; mobile = section below the map */}
+        <div className="order-2 flex flex-1 flex-col overflow-hidden bg-beige md:order-1 md:w-[420px] md:flex-none md:border-r md:border-line">
+          {/* Desktop-only: search bar + full filter bar live here */}
+          <div className="hidden space-y-3 border-b border-line bg-white px-4 py-4 md:block">
             <SearchBar value={filters.keyword} onChange={(keyword) => setFilters((f) => ({ ...f, keyword }))} />
             <FilterBar
               filters={filters}
@@ -70,8 +84,12 @@ export default function HomePage() {
               resultCount={sorted.length}
             />
           </div>
+          {/* Mobile-only: just a result count, no search/filter (spec #3) */}
+          <div className="border-b border-line bg-white px-4 py-3 text-sm text-subtext md:hidden">
+            주변 웨딩홀 <strong className="text-ink">{sorted.length}</strong>개
+          </div>
 
-          <div className="flex-1 overflow-y-auto">
+          <div className="flex-1 overflow-y-auto pb-20 md:pb-0">
             {!isKakaoConfigured && !dismissedInfoBanner && (
               <div className="px-4 pt-4">
                 <ErrorBanner
@@ -97,30 +115,27 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* Map column (desktop: right side; mobile: full screen background) */}
-        <div className="relative flex-1">
-          <KakaoMap halls={sorted} selectedId={selectedId} onSelectHall={selectHall} />
+        {/* Map column: desktop = right side (flex-1); mobile = fixed-height band on top */}
+        <div className="relative order-1 h-[38vh] shrink-0 md:order-2 md:h-auto md:flex-1">
+          <KakaoMap
+            halls={sorted}
+            selectedId={mapActiveId}
+            onMarkerClick={(hall) => setPreviewHall(hall)}
+            onViewDetail={selectHall}
+          />
 
-          {/* Mobile: search + filter overlay on top of the map */}
-          <div className="absolute inset-x-0 top-0 z-10 space-y-2 p-3 md:hidden">
-            <div className="rounded-2xl bg-white/95 p-2.5 shadow-popover backdrop-blur-sm">
-              <SearchBar value={filters.keyword} onChange={(keyword) => setFilters((f) => ({ ...f, keyword }))} />
-            </div>
-            <div className="overflow-x-auto rounded-2xl bg-white/95 p-2.5 shadow-popover backdrop-blur-sm">
-              <FilterBar
-                filters={filters}
-                sort={sort}
-                onChange={setFilters}
-                onSortChange={setSort}
-                resultCount={sorted.length}
-              />
-            </div>
-          </div>
+          {previewHall && (
+            <MapPreviewSheet
+              hall={previewHall}
+              onClose={() => setPreviewHall(null)}
+              onViewDetail={() => selectHall(previewHall)}
+            />
+          )}
         </div>
 
         {/* Desktop: detail slide-over */}
         {selectedHall && (
-          <div className="hidden w-[420px] shrink-0 border-l border-line md:block">
+          <div className="order-3 hidden w-[420px] shrink-0 border-l border-line md:block">
             <WeddingDetailPanel
               hall={selectedHall}
               favorite={favoriteIds.has(selectedHall.id)}
@@ -138,8 +153,8 @@ export default function HomePage() {
         )}
       </div>
 
-      {/* Mobile: bottom sheet list, or full-screen detail */}
-      {selectedHall ? (
+      {/* Mobile: full-screen detail overlay */}
+      {selectedHall && (
         <div className="fixed inset-0 z-30 md:hidden">
           <WeddingDetailPanel
             hall={selectedHall}
@@ -153,29 +168,12 @@ export default function HomePage() {
             onShowOnMap={closeDetail}
           />
         </div>
-      ) : (
-        <BottomSheet expanded={mobileExpanded} onToggle={() => setMobileExpanded((e) => !e)}>
-          <div className="px-1 pb-2 text-center text-xs text-subtext">
-            총 {sorted.length}개의 웨딩홀 · 위로 당겨서 목록 보기
-          </div>
-          <WeddingList
-            halls={sorted}
-            selectedId={selectedId}
-            favoriteIds={favoriteIds}
-            onSelect={selectHall}
-            onToggleFavorite={toggle}
-            loading={loading}
-          />
-        </BottomSheet>
       )}
 
-      {!isSupabaseConfigured && (
-        <div className="hidden" aria-hidden>
-          {/* Supabase not configured: app runs on in-memory mock data (see services/weddingHallService.ts) */}
-        </div>
-      )}
-
-      <MobileNav />
+      {/* Full-screen mobile detail is a stacked page (its own back/close
+          button), so the main tab bar hides while it's open - matching the
+          detail mockup, which has no bottom nav. */}
+      {!selectedHall && <MobileNav />}
     </div>
   )
 }

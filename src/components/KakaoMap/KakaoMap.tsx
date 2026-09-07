@@ -12,19 +12,28 @@ const DEFAULT_LEVEL = 9
 
 interface KakaoMapProps {
   halls: WeddingHall[]
+  // Which hall to pan to / highlight / show the in-map overlay card for.
   selectedId: string | null
-  onSelectHall: (hall: WeddingHall) => void
+  // Fired when a marker ITSELF is tapped/clicked. On mobile this only opens
+  // the compact MapPreviewSheet (see HomePage) rather than navigating - it
+  // does not by itself open the full detail page.
+  onMarkerClick: (hall: WeddingHall) => void
+  // Fired when the in-map overlay card's own "상세보기" button is clicked -
+  // this is the action that actually navigates to the full detail page.
+  onViewDetail: (hall: WeddingHall) => void
 }
 
-export default function KakaoMap({ halls, selectedId, onSelectHall }: KakaoMapProps) {
+export default function KakaoMap({ halls, selectedId, onMarkerClick, onViewDetail }: KakaoMapProps) {
   const kakaoState = useKakaoLoader()
   const containerRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<any>(null)
   const clustererRef = useRef<any>(null)
   const markersRef = useRef<Map<string, any>>(new Map())
   const overlayRef = useRef<any>(null)
-  const onSelectRef = useRef(onSelectHall)
-  onSelectRef.current = onSelectHall
+  const onMarkerClickRef = useRef(onMarkerClick)
+  onMarkerClickRef.current = onMarkerClick
+  const onViewDetailRef = useRef(onViewDetail)
+  onViewDetailRef.current = onViewDetail
 
   // initialize the map once the SDK is ready
   useEffect(() => {
@@ -90,7 +99,7 @@ export default function KakaoMap({ halls, selectedId, onSelectHall }: KakaoMapPr
       </div>
     `
     content.querySelector('[data-close]')?.addEventListener('click', closeOverlay)
-    content.querySelector('[data-detail]')?.addEventListener('click', () => onSelectRef.current(hall))
+    content.querySelector('[data-detail]')?.addEventListener('click', () => onViewDetailRef.current(hall))
 
     const overlay = new kakao.maps.CustomOverlay({
       position: new kakao.maps.LatLng(hall.latitude, hall.longitude),
@@ -122,7 +131,7 @@ export default function KakaoMap({ halls, selectedId, onSelectHall }: KakaoMapPr
         ),
       })
       kakao.maps.event.addListener(marker, 'click', () => {
-        onSelectRef.current(hall)
+        onMarkerClickRef.current(hall)
       })
       markersRef.current.set(hall.id, marker)
       return marker

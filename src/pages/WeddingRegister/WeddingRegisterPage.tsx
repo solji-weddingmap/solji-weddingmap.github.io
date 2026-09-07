@@ -3,6 +3,7 @@ import { useNavigate, useParams, Link } from 'react-router-dom'
 import { ClipboardCheck, ShieldAlert } from 'lucide-react'
 import Header from '@/components/Header/Header'
 import WeddingForm from '@/components/WeddingForm/WeddingForm'
+import BulkImportPanel from '@/components/WeddingForm/BulkImportPanel'
 import ErrorBanner from '@/components/common/ErrorBanner'
 import {
   createWeddingHall,
@@ -142,34 +143,45 @@ export default function WeddingRegisterPage({ mode }: WeddingRegisterPageProps) 
   return (
     <div className="min-h-screen bg-beige">
       <Header />
-      <div className="mx-auto max-w-3xl px-4 py-8">
-        <h1 className="mb-1 text-xl font-bold text-ink">
-          {mode === 'edit' ? '웨딩홀 정보 수정' : '웨딩홀 등록하기'}
-        </h1>
-        <p className="mb-6 text-sm text-subtext">
-          새로운 웨딩홀 정보를 등록하고, 설레는 예비부부들에게 소개해주세요.
-        </p>
+      <div className="mx-auto max-w-3xl px-4 py-8 md:max-w-5xl">
+        <div className="md:grid md:grid-cols-[minmax(0,1fr)_320px] md:items-start md:gap-8">
+          <div className="md:max-w-2xl">
+            <h1 className="mb-1 text-xl font-bold text-ink">
+              {mode === 'edit' ? '웨딩홀 정보 수정' : '웨딩홀 등록하기'}
+            </h1>
+            <p className="mb-6 text-sm text-subtext">
+              새로운 웨딩홀 정보를 등록하고, 설레는 예비부부들에게 소개해주세요.
+            </p>
 
-        {loading && <p className="py-20 text-center text-subtext">불러오는 중...</p>}
+            {loading && <p className="py-20 text-center text-subtext">불러오는 중...</p>}
 
-        {loadError && (
-          <div className="mb-4">
-            <ErrorBanner message={loadError} />
+            {loadError && (
+              <div className="mb-4">
+                <ErrorBanner message={loadError} />
+              </div>
+            )}
+
+            {!loading && mode === 'edit' && !existing && !loadError && (
+              <ErrorBanner message="수정할 웨딩홀을 찾을 수 없습니다." />
+            )}
+
+            {!loading && (mode === 'create' || existing) && (
+              <WeddingForm
+                initial={existing ?? undefined}
+                submitLabel={mode === 'edit' ? '수정 완료' : '등록 완료'}
+                onSubmit={handleSubmit}
+                onCancel={() => navigate(-1)}
+              />
+            )}
           </div>
-        )}
 
-        {!loading && mode === 'edit' && !existing && !loadError && (
-          <ErrorBanner message="수정할 웨딩홀을 찾을 수 없습니다." />
-        )}
-
-        {!loading && (mode === 'create' || existing) && (
-          <WeddingForm
-            initial={existing ?? undefined}
-            submitLabel={mode === 'edit' ? '수정 완료' : '등록 완료'}
-            onSubmit={handleSubmit}
-            onCancel={() => navigate(-1)}
-          />
-        )}
+          {/* 엑셀 일괄 등록은 데스크탑 전용 - 모바일에서는 아예 보여주지 않는다 */}
+          {!loading && mode === 'create' && (
+            <div className="hidden md:sticky md:top-8 md:block">
+              <BulkImportPanel userId={user?.id} />
+            </div>
+          )}
+        </div>
       </div>
     </div>
   )

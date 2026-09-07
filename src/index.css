@@ -1,0 +1,45 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html, body, #root {
+  height: 100%;
+}
+
+body {
+  @apply bg-beige text-ink antialiased;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background: #d7dad3;
+  border-radius: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Kakao custom overlay uses plain DOM, keep a couple of shared classes here */
+.kakao-overlay-card {
+  @apply w-56 rounded-xl2 bg-white shadow-popover border border-line overflow-hidden;
+}
+
+@layer components {
+  .input {
+    @apply w-full rounded-lg border border-line px-3 py-2.5 text-sm text-ink placeholder:text-subtext focus:border-olive focus:outline-none focus:ring-1 focus:ring-olive;
+  }
+}

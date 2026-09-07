@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Search, Sparkles } from 'lucide-react'
+import { ExternalLink, Search, Sparkles } from 'lucide-react'
 import { isKakaoConfigured, searchPlaces, type PlaceSearchResult } from '@/lib/kakao'
 import { useKakaoLoader } from '@/hooks/useKakaoLoader'
 import ErrorBanner from '@/components/common/ErrorBanner'
@@ -72,7 +72,7 @@ export default function BusinessSearchField({ onSelect }: BusinessSearchFieldPro
 
       <p className="mt-2 text-xs text-subtext">
         {isKakaoConfigured
-          ? '카카오맵에 등록된 업체를 선택하면 이름/주소/좌표/전화번호가 자동으로 채워져요. 홈페이지, 대관료, 인원 등 웨딩홀 전용 정보는 카카오맵에 없어 직접 입력해야 해요.'
+          ? '카카오맵에 등록된 업체를 선택하면 이름/주소/좌표/전화번호가 자동으로 채워져요. 홈페이지 주소나 사진은 카카오맵 화면에는 보여도 검색 API로는 가져올 수 없어서, 검색 결과 옆 "카카오맵" 버튼으로 실제 페이지를 열어 확인 후 직접 입력해주세요.'
           : '카카오맵 API Key가 없어 업체 자동 검색이 비활성화되어 있습니다. 아래 항목을 직접 입력해주세요.'}
       </p>
 
@@ -85,7 +85,7 @@ export default function BusinessSearchField({ onSelect }: BusinessSearchFieldPro
       {results && results.length > 0 && (
         <ul className="mt-2 max-h-60 overflow-y-auto rounded-lg border border-line bg-white">
           {results.map((r, i) => (
-            <li key={i}>
+            <li key={i} className="flex items-start gap-1.5 border-b border-line px-3 py-2 last:border-b-0 hover:bg-beige">
               <button
                 type="button"
                 onClick={() => {
@@ -93,7 +93,7 @@ export default function BusinessSearchField({ onSelect }: BusinessSearchFieldPro
                   setResults(null)
                   setQuery(r.placeName)
                 }}
-                className="block w-full border-b border-line px-3 py-2 text-left text-sm last:border-b-0 hover:bg-beige"
+                className="flex-1 text-left text-sm"
               >
                 <p className="font-medium text-ink">{r.placeName}</p>
                 <p className="text-xs text-subtext">{r.roadAddress ?? r.address}</p>
@@ -101,6 +101,17 @@ export default function BusinessSearchField({ onSelect }: BusinessSearchFieldPro
                   {[r.categoryName, r.phone].filter(Boolean).join(' · ')}
                 </p>
               </button>
+              {r.placeUrl && (
+                <a
+                  href={r.placeUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  title="카카오맵에서 홈페이지·사진 확인하기"
+                  className="mt-0.5 flex shrink-0 items-center gap-1 rounded-md border border-line px-2 py-1 text-xs text-subtext hover:border-olive hover:text-olive-dark"
+                >
+                  <ExternalLink size={12} /> 카카오맵
+                </a>
+              )}
             </li>
           ))}
         </ul>

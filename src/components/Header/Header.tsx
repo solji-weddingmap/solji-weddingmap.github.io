@@ -9,9 +9,23 @@ export default function Header() {
 
   return (
     <header className="flex h-16 shrink-0 items-center justify-between border-b border-line bg-white px-4 md:px-6">
-      <Link to="/" className="flex items-baseline gap-2">
-        <span className="text-lg font-bold tracking-tight text-ink">WEDDING MAP</span>
-        <span className="hidden text-xs text-subtext md:inline">Find Your Perfect Wedding Hall</span>
+      <Link to="/" className="flex items-center gap-2">
+        {/* 파비콘과 동일한 하트 핀 마크 - 로고 텍스트 앞에 브랜드 아이콘으로 노출 */}
+        <svg width="28" height="28" viewBox="0 0 100 100" className="shrink-0" aria-hidden="true">
+          <rect width="100" height="100" rx="22" fill="#5F7058" />
+          <path
+            d="M50 18c-11.6 0-21 9.3-21 20.8 0 15.6 21 41.2 21 41.2s21-25.6 21-41.2C71 27.3 61.6 18 50 18z"
+            fill="#FFFFFF"
+          />
+          <path
+            d="M50 32.5c3.6-4 9.7-4 12.6-0.4 2.6 3.3 2.1 8-1.1 11l-11.5 10.6-11.5-10.6c-3.2-3-3.7-7.7-1.1-11 2.9-3.6 9-3.6 12.6.4z"
+            fill="#5F7058"
+          />
+        </svg>
+        <span className="flex items-baseline gap-2">
+          <span className="text-lg font-bold tracking-tight text-ink">WEDDING MAP</span>
+          <span className="hidden text-xs text-subtext md:inline">Find Your Perfect Wedding Hall</span>
+        </span>
       </Link>
 
       <nav className="flex items-center gap-2 md:gap-3">
